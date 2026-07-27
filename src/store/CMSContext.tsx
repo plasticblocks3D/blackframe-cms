@@ -331,6 +331,8 @@ updated:Page[]
 setPages(updated);
 
 
+try{
+
 localStorage.setItem(
 
 "blackframe-pages",
@@ -338,6 +340,17 @@ localStorage.setItem(
 JSON.stringify(updated)
 
 );
+
+}
+
+catch(error){
+
+console.error(
+"Could not save pages:",
+error
+);
+
+}
 
 }
 
@@ -891,11 +904,20 @@ item:MediaItem
 
 ){
 
+const compressedItem={
+
+...item,
+
+url:item.url
+
+};
+
+
 saveMedia([
 
 ...media,
 
-item
+compressedItem
 
 ]);
 

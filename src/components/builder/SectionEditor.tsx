@@ -1,19 +1,5 @@
 import { useState } from "react";
-import type { Section } from "../../store/CMSContext";
-
-
-type Props = {
-
-section:Section;
-
-onSave:(
-
-data:Partial<Section>
-
-)=>void;
-
-};
-
+import { useCMS } from "../../store/CMSContext";
 
 
 export default function SectionEditor({
@@ -22,33 +8,48 @@ section,
 
 onSave
 
-}:Props){
+}:{
+
+section:any;
+
+onSave:(data:any)=>void;
+
+}){
 
 
+const {media}=useCMS();
 
-const [settings,setSettings] =
 
-useState(
+const [form,setForm]=useState({
 
-section.settings || {}
+title:
+section.settings?.heading || "",
 
-);
+text:
+section.settings?.text || "",
 
+image:
+section.settings?.image || "",
+
+buttonText:
+section.settings?.buttonText || "",
+
+buttonLink:
+section.settings?.buttonLink || ""
+
+});
 
 
 
 
 function update(
-
 key:string,
-
 value:string
-
 ){
 
-setSettings({
+setForm({
 
-...settings,
+...form,
 
 [key]:value
 
@@ -64,12 +65,23 @@ function save(){
 
 onSave({
 
-settings
+settings:{
+
+heading:form.title,
+
+text:form.text,
+
+image:form.image,
+
+buttonText:form.buttonText,
+
+buttonLink:form.buttonLink
+
+}
 
 });
 
 }
-
 
 
 
@@ -81,120 +93,107 @@ return(
 <div>
 
 
-
-{/* HERO EDITOR */}
-
 {
-
-section.type==="hero" && (
+section.type==="hero" &&
 
 <>
-
 
 <label>
 Title
 </label>
 
+<br/>
+
 <input
 
-value={settings.heading || ""}
+value={form.title}
 
-onChange={e=>
-
+onChange={(e)=>
 update(
-"heading",
+"title",
 e.target.value
 )
-
 }
 
 />
 
 
-
 <br/><br/>
-
-
 
 
 <label>
 Subtitle
 </label>
 
+<br/>
 
 <textarea
 
-value={settings.text || ""}
+value={form.text}
 
-onChange={e=>
-
+onChange={(e)=>
 update(
 "text",
 e.target.value
 )
-
 }
 
 />
 
 
-
 <br/><br/>
 
 
-
-
 <label>
-Background Image URL
+Background Image
 </label>
 
 
-<input
+<select
 
-value={settings.image || ""}
+value={form.image}
 
-onChange={e=>
-
+onChange={(e)=>
 update(
 "image",
 e.target.value
 )
+}
+
+>
+
+
+<option value="">
+Choose image
+</option>
+
+
+{
+
+media.map(item=>(
+
+<option
+
+key={item.id}
+
+value={item.url}
+
+>
+
+{item.name}
+
+</option>
+
+))
 
 }
 
-/>
 
-
-
-<br/><br/>
-
-
-
-
-<label>
-Button Text
-</label>
-
-
-<input
-
-value={settings.buttonText || ""}
-
-onChange={e=>
-
-update(
-"buttonText",
-e.target.value
-)
-
-}
-
-/>
+</select>
 
 
 </>
 
-)
 
 }
 
@@ -202,82 +201,91 @@ e.target.value
 
 
 
-
-{/* TEXT EDITOR */}
-
 {
-
-section.type==="text" && (
+section.type==="image" &&
 
 <>
 
 
-<label>
-Heading
-</label>
+<h4>
+Choose Image From Media Library
+</h4>
 
 
-<input
+<div
 
-value={settings.heading || ""}
+style={{
 
-onChange={e=>
+display:"flex",
 
-update(
-"heading",
-e.target.value
-)
+gap:"10px",
 
-}
+flexWrap:"wrap"
 
-/>
+}}
 
+>
 
-
-<br/><br/>
-
-
-
-
-<label>
-Paragraph
-</label>
-
-
-<textarea
-
-value={settings.text || ""}
-
-onChange={e=>
-
-update(
-"text",
-e.target.value
-)
-
-}
-
-/>
-
-
-</>
-
-)
-
-}
-
-
-
-
-
-
-{/* IMAGE EDITOR */}
 
 {
 
-section.type==="image" && (
+media.map(item=>(
 
-<>
+
+<img
+
+key={item.id}
+
+src={item.url}
+
+alt={item.name}
+
+style={{
+
+width:"80px",
+
+height:"60px",
+
+objectFit:"cover",
+
+cursor:"pointer",
+
+border:
+
+form.image===item.url
+
+?
+
+"3px solid blue"
+
+:
+
+"1px solid gray"
+
+}}
+
+onClick={()=>update(
+
+"image",
+
+item.url
+
+)}
+
+
+/>
+
+
+))
+
+
+}
+
+
+</div>
+
+
+<br/>
 
 
 <label>
@@ -285,17 +293,18 @@ Image URL
 </label>
 
 
+<br/>
+
+
 <input
 
-value={settings.image || ""}
+value={form.image}
 
-onChange={e=>
-
+onChange={(e)=>
 update(
 "image",
 e.target.value
 )
-
 }
 
 />
@@ -303,132 +312,15 @@ e.target.value
 
 </>
 
-)
-
 }
 
 
 
 
-
-
-{/* BUTTON EDITOR */}
-
-{
-
-section.type==="button" && (
-
-<>
-
-
-<label>
-Button Text
-</label>
-
-
-<input
-
-value={settings.buttonText || ""}
-
-onChange={e=>
-
-update(
-"buttonText",
-e.target.value
-)
-
-}
-
-/>
-
-
-
-<br/><br/>
-
-
-
-
-<label>
-Button Link
-</label>
-
-
-<input
-
-value={settings.buttonLink || ""}
-
-onChange={e=>
-
-update(
-"buttonLink",
-e.target.value
-)
-
-}
-
-/>
-
-
-</>
-
-)
-
-}
-
-
-
-
-
-
-{/* CONTACT EDITOR */}
-
-{
-
-section.type==="contact" && (
-
-<>
-
-
-<label>
-Contact Information
-</label>
-
-
-<textarea
-
-value={settings.text || ""}
-
-onChange={e=>
-
-update(
-"text",
-e.target.value
-)
-
-}
-
-/>
-
-
-</>
-
-)
-
-}
-
-
-
-
-
+<br/>
 
 
 <button
-
-style={{
-
-marginTop:"15px"
-
-}}
 
 onClick={save}
 
@@ -439,9 +331,10 @@ Save Section
 </button>
 
 
-
 </div>
 
+
 );
+
 
 }

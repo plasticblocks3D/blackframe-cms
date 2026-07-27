@@ -32,8 +32,6 @@ p=>p.id===selectedPage
 
 
 
-
-
 function createSection(
 type:
 "hero"
@@ -56,9 +54,6 @@ type
 
 
 
-
-
-
 return(
 
 <div
@@ -78,9 +73,6 @@ padding:"20px"
 >
 
 
-{/* BUILDER SIDE */}
-
-
 <div>
 
 
@@ -97,14 +89,13 @@ value={selectedPage}
 onChange={(e)=>
 
 setSelectedPage(
-
 Number(e.target.value)
-
 )
 
 }
 
 >
+
 
 {
 
@@ -126,8 +117,8 @@ value={page.id}
 
 }
 
-</select>
 
+</select>
 
 
 
@@ -139,8 +130,8 @@ Sections
 
 
 
-
 <div>
+
 
 <button onClick={()=>createSection("hero")}>
 + Hero
@@ -171,10 +162,8 @@ Sections
 + Button
 </button>
 
+
 </div>
-
-
-
 
 
 
@@ -207,11 +196,8 @@ marginTop:"15px"
 
 
 <h3>
-
 {section.title}
-
 </h3>
-
 
 
 <p>
@@ -234,7 +220,21 @@ page.id,
 
 section.id,
 
-data
+{
+
+...section,
+
+...data,
+
+settings:{
+
+...section.settings,
+
+...data.settings
+
+}
+
+}
 
 );
 
@@ -264,22 +264,14 @@ marginTop:"15px"
 >
 
 
-
 <button
 
 disabled={index===0}
 
-onClick={()=>{
-
-moveSectionUp(
-
+onClick={()=>moveSectionUp(
 page.id,
-
 section.id
-
-);
-
-}}
+)}
 
 >
 
@@ -290,22 +282,14 @@ section.id
 
 
 
-
 <button
 
 disabled={index===page.sections.length-1}
 
-onClick={()=>{
-
-moveSectionDown(
-
+onClick={()=>moveSectionDown(
 page.id,
-
 section.id
-
-);
-
-}}
+)}
 
 >
 
@@ -316,20 +300,12 @@ section.id
 
 
 
-
 <button
 
-onClick={()=>{
-
-duplicateSection(
-
+onClick={()=>duplicateSection(
 page.id,
-
 section.id
-
-);
-
-}}
+)}
 
 >
 
@@ -340,20 +316,12 @@ section.id
 
 
 
-
 <button
 
-onClick={()=>{
-
-deleteSection(
-
+onClick={()=>deleteSection(
 page.id,
-
 section.id
-
-);
-
-}}
+)}
 
 >
 
@@ -362,9 +330,7 @@ section.id
 </button>
 
 
-
 </div>
-
 
 
 
@@ -385,19 +351,12 @@ section.id
 
 
 
-
-
-
-{/* PREVIEW SIDE */}
-
-
 <div>
 
 
 <h1>
 Website Preview
 </h1>
-
 
 
 {
@@ -418,9 +377,8 @@ page={page}
 
 
 
-
-
 </div>
+
 
 );
 
