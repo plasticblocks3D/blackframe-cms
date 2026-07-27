@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 
 export type Page = {
@@ -18,25 +18,59 @@ type CMSContextType = {
 const CMSContext = createContext<CMSContextType | null>(null);
 
 
-export function CMSProvider({ children }: { children: React.ReactNode }) {
 
-  const [pages, setPages] = useState<Page[]>([
-    {
-      id: 1,
-      title: "Home",
-      status: "Published",
-    },
-    {
-      id: 2,
-      title: "About",
-      status: "Draft",
-    },
-    {
-      id: 3,
-      title: "Contact",
-      status: "Published",
-    },
-  ]);
+const defaultPages: Page[] = [
+  {
+    id: 1,
+    title: "Home",
+    status: "Published"
+  },
+  {
+    id: 2,
+    title: "About",
+    status: "Draft"
+  },
+  {
+    id: 3,
+    title: "Contact",
+    status: "Published"
+  }
+];
+
+
+
+export function CMSProvider({
+  children
+}: {
+  children: React.ReactNode;
+}) {
+
+
+  const [pages, setPages] = useState<Page[]>(() => {
+
+    const saved = localStorage.getItem(
+      "blackframe-pages"
+    );
+
+    return saved
+      ? JSON.parse(saved)
+      : defaultPages;
+
+  });
+
+
+
+  // Save whenever pages change
+  useEffect(() => {
+
+    localStorage.setItem(
+      "blackframe-pages",
+      JSON.stringify(pages)
+    );
+
+  }, [pages]);
+
+
 
 
   function addPage(title: string) {
@@ -47,11 +81,15 @@ export function CMSProvider({ children }: { children: React.ReactNode }) {
       status: "Draft",
     };
 
+
     setPages([
       ...pages,
       newPage
     ]);
+
   }
+
+
 
 
   function deletePage(id: number) {
@@ -65,7 +103,10 @@ export function CMSProvider({ children }: { children: React.ReactNode }) {
   }
 
 
+
+
   return (
+
     <CMSContext.Provider
       value={{
         pages,
@@ -73,10 +114,16 @@ export function CMSProvider({ children }: { children: React.ReactNode }) {
         deletePage
       }}
     >
+
       {children}
+
     </CMSContext.Provider>
+
   );
+
 }
+
+
 
 
 
@@ -84,11 +131,15 @@ export function useCMS() {
 
   const context = useContext(CMSContext);
 
+
   if (!context) {
+
     throw new Error(
       "useCMS must be used inside CMSProvider"
     );
+
   }
+
 
   return context;
 
