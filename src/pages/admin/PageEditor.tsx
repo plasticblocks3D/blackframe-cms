@@ -5,12 +5,14 @@ import { useState } from "react";
 
 export default function PageEditor() {
 
-
   const { id } = useParams();
 
   const navigate = useNavigate();
 
-  const { pages } = useCMS();
+  const {
+    pages,
+    updatePage
+  } = useCMS();
 
 
   const page = pages.find(
@@ -18,23 +20,31 @@ export default function PageEditor() {
   );
 
 
-  const [title, setTitle] = useState(
+  const [title,setTitle] = useState(
     page?.title || ""
   );
 
 
-  if (!page) {
+  const [content,setContent] = useState(
+    page?.content || ""
+  );
+
+
+
+  if(!page){
 
     return (
 
       <div className="page">
 
-        <h1>Page Not Found</h1>
+        <h1>
+          Page Not Found
+        </h1>
 
-        <button onClick={() => navigate("/pages")}>
-
+        <button
+          onClick={() => navigate("/pages")}
+        >
           Back
-
         </button>
 
       </div>
@@ -45,64 +55,81 @@ export default function PageEditor() {
 
 
 
+  function savePage(){
+
+    updatePage(
+      page.id,
+      {
+        title,
+        content
+      }
+    );
+
+
+    navigate("/pages");
+
+  }
+
+
+
   return (
 
     <div className="page">
 
-      <h1>Edit Page</h1>
+      <h1>
+        Edit Page
+      </h1>
 
 
-      <div className="stat-card">
+
+      <h3>
+        Title
+      </h3>
+
+      <input
+
+        value={title}
+
+        onChange={
+          e => setTitle(e.target.value)
+        }
+
+      />
 
 
-        <label>
-          Page Title
-        </label>
+
+      <br/><br/>
 
 
-        <input
 
-          value={title}
-
-          onChange={
-            e => setTitle(e.target.value)
-          }
-
-          style={{
-            width:"100%",
-            padding:"12px",
-            marginTop:"10px"
-          }}
-
-        />
+      <h3>
+        Content
+      </h3>
 
 
-        <br /><br />
+      <textarea
+
+        rows={12}
+
+        value={content}
+
+        onChange={
+          e => setContent(e.target.value)
+        }
+
+      />
 
 
-        <button>
 
-          Save Changes
-
-        </button>
+      <br/><br/>
 
 
-        <button
 
-          onClick={() => navigate("/pages")}
-
-          style={{
-            marginLeft:"10px"
-          }}
-
-        >
-
-          Cancel
-
-        </button>
-
-
-      </div>
+      <button
+        onClick={savePage}
+      >
+        Save Changes
+      </button>
 
 
     </div>

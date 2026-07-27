@@ -5,6 +5,7 @@ import AdminLayout from "../layouts/AdminLayout";
 import Dashboard from "../pages/admin/Dashboard";
 import Pages from "../pages/admin/Pages";
 import PageEditor from "../pages/admin/PageEditor";
+import Builder from "../pages/admin/Builder";
 
 import Media from "../pages/admin/Media";
 import Theme from "../pages/admin/Theme";
@@ -27,8 +28,13 @@ export default function AppRouter() {
           <Route path="pages" element={<Pages />} />
 
           <Route 
-            path="pages/edit/:id" 
-            element={<PageEditor />} 
+            path="pages/edit/:id"
+            element={<PageEditor />}
+          />
+
+          <Route
+            path="builder"
+            element={<Builder />}
           />
 
 
