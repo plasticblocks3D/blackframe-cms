@@ -43,6 +43,18 @@ export type Section = {
 
 
 
+export type MediaItem = {
+
+  id:number;
+
+  name:string;
+
+  url:string;
+
+};
+
+
+
 export type Page = {
 
   id:number;
@@ -64,9 +76,16 @@ export type Page = {
 
 
 
+
 type CMSContextType = {
 
+
   pages:Page[];
+
+
+  media:MediaItem[];
+
+
 
 
   addPage(
@@ -74,9 +93,11 @@ type CMSContextType = {
   ):void;
 
 
+
   deletePage(
     id:number
   ):void;
+
 
 
   updatePage(
@@ -128,8 +149,19 @@ type CMSContextType = {
   ):void;
 
 
-};
 
+  addMedia(
+    item:MediaItem
+  ):void;
+
+
+
+  deleteMedia(
+    id:number
+  ):void;
+
+
+};
 
 
 
@@ -175,9 +207,7 @@ buttonLink:""
 },
 
 
-
 {
-
 id:2,
 
 title:"About",
@@ -212,9 +242,7 @@ image:""
 },
 
 
-
 {
-
 id:3,
 
 title:"Contact",
@@ -229,15 +257,8 @@ sections:[]
 
 ];
 
-
-
-
-
-
-
 const CMSContext =
 createContext<CMSContextType | null>(null);
-
 
 
 
@@ -278,6 +299,30 @@ defaultPages;
 
 
 
+const [media,setMedia]=
+useState<MediaItem[]>(()=>{
+
+
+const saved =
+localStorage.getItem(
+"blackframe-media"
+);
+
+
+return saved
+?
+JSON.parse(saved)
+:
+[];
+
+
+});
+
+
+
+
+
+
 
 function savePages(
 updated:Page[]
@@ -287,8 +332,33 @@ setPages(updated);
 
 
 localStorage.setItem(
+
 "blackframe-pages",
+
 JSON.stringify(updated)
+
+);
+
+}
+
+
+
+
+
+
+function saveMedia(
+updated:MediaItem[]
+){
+
+setMedia(updated);
+
+
+localStorage.setItem(
+
+"blackframe-media",
+
+JSON.stringify(updated)
+
 );
 
 }
@@ -334,7 +404,6 @@ newPage
 
 
 
-
 function deletePage(
 id:number
 ){
@@ -342,7 +411,9 @@ id:number
 savePages(
 
 pages.filter(
+
 p=>p.id!==id
+
 )
 
 );
@@ -363,6 +434,7 @@ data:Partial<Page>
 savePages(
 
 pages.map(page=>
+
 
 page.id===id
 
@@ -385,7 +457,6 @@ page
 );
 
 }
-
 
 
 
@@ -470,8 +541,6 @@ buttonLink:""
 
 
 
-
-
 function updateSection(
 
 pageId:number,
@@ -524,7 +593,6 @@ settings:{
 
 }
 
-
 :
 
 section
@@ -541,9 +609,6 @@ section
 
 
 }
-
-
-
 
 
 
@@ -599,10 +664,6 @@ section.id!==sectionId
 
 
 
-
-
-
-
 function moveSectionUp(
 
 pageId:number,
@@ -627,7 +688,9 @@ const sections=[...page.sections];
 
 const index =
 sections.findIndex(
+
 s=>s.id===sectionId
+
 );
 
 
@@ -672,10 +735,6 @@ sections
 
 
 
-
-
-
-
 function moveSectionDown(
 
 pageId:number,
@@ -700,7 +759,9 @@ const sections=[...page.sections];
 
 const index =
 sections.findIndex(
+
 s=>s.id===sectionId
+
 );
 
 
@@ -744,14 +805,6 @@ sections
 
 }
 
-
-
-
-
-
-
-
-
 function duplicateSection(
 
 pageId:number,
@@ -773,7 +826,9 @@ return page;
 
 const section =
 page.sections.find(
+
 s=>s.id===sectionId
+
 );
 
 
@@ -830,6 +885,50 @@ settings:{
 
 
 
+function addMedia(
+
+item:MediaItem
+
+){
+
+saveMedia([
+
+...media,
+
+item
+
+]);
+
+}
+
+
+
+
+
+
+function deleteMedia(
+
+id:number
+
+){
+
+saveMedia(
+
+media.filter(
+
+item=>
+
+item.id!==id
+
+)
+
+);
+
+}
+
+
+
+
 
 
 
@@ -840,6 +939,8 @@ return(
 value={{
 
 pages,
+
+media,
 
 addPage,
 
@@ -857,7 +958,11 @@ moveSectionUp,
 
 moveSectionDown,
 
-duplicateSection
+duplicateSection,
+
+addMedia,
+
+deleteMedia
 
 }}
 
@@ -892,7 +997,9 @@ useContext(CMSContext);
 if(!context){
 
 throw new Error(
+
 "useCMS must be used inside CMSProvider"
+
 );
 
 }
