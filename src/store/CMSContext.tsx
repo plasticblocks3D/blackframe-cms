@@ -1,22 +1,35 @@
 import {
   createContext,
   useContext,
-  useState,
-  useEffect,
-  ReactNode
+  useState
 } from "react";
 
 
-export type Page = {
-
+export type Section = {
   id: number;
 
   title: string;
 
+  type:
+    | "hero"
+    | "text"
+    | "image"
+    | "gallery"
+    | "contact"
+    | "button";
+
+  content?: string;
+
+  image?: string;
+};
+
+
+export type Page = {
+  id: number;
+  title: string;
   content: string;
-
   status: "Published" | "Draft";
-
+  sections: Section[];
 };
 
 
@@ -25,14 +38,30 @@ type CMSContextType = {
 
   pages: Page[];
 
-  addPage: (title:string)=>void;
+  addPage: (
+    title: string
+  ) => void;
 
-  deletePage: (id:number)=>void;
+  deletePage: (
+    id:number
+  ) => void;
 
   updatePage: (
     id:number,
-    changes:Partial<Page>
-  )=>void;
+    data:Partial<Page>
+  ) => void;
+
+
+  addSection: (
+    pageId:number,
+    type:Section["type"]
+  ) => void;
+
+
+  deleteSection: (
+    pageId:number,
+    sectionId:number
+  ) => void;
 
 };
 
@@ -40,185 +69,171 @@ type CMSContextType = {
 
 const defaultPages:Page[] = [
 
+{
+ id:1,
+ title:"Home",
+ content:"Welcome to the homepage.",
+ status:"Published",
+ sections:[
   {
-    id:1,
-    title:"Home",
-    content:"Welcome to our website.",
-    status:"Published"
-  },
+ id:1,
+ title:"Hero Section",
+ type:"hero"
+}
+ ]
+},
 
 
+{
+ id:2,
+ title:"About",
+ content:"About this website.",
+ status:"Draft",
+ sections:[
   {
-    id:2,
-    title:"About",
-    content:"Learn more about us.",
-    status:"Draft"
-  },
+ id:2,
+ title:"Text Section",
+ type:"text"
+}
+ ]
+},
 
 
-  {
-    id:3,
-    title:"Contact",
-    content:"Contact information goes here.",
-    status:"Published"
-  }
+{
+ id:3,
+ title:"Contact",
+ content:"Contact information.",
+ status:"Published",
+ sections:[]
+}
 
 ];
 
 
 
-const CMSContext = createContext<CMSContextType | null>(null);
+const CMSContext =
+createContext<CMSContextType | null>(null);
 
 
 
-export function CMSProvider(
-  {children}:{children:ReactNode}
+export function CMSProvider({
+ children
+}:{
+ children:React.ReactNode
+}){
+
+
+const [pages,setPages] =
+useState<Page[]>(()=>{
+
+const saved =
+localStorage.getItem(
+"blackframe-pages"
+);
+
+
+return saved
+? JSON.parse(saved).map((page:Page)=>({
+    ...page,
+    sections: page.sections || []
+  }))
+: defaultPages;
+
+
+});
+
+
+
+
+function savePages(
+updated:Page[]
+){
+
+setPages(updated);
+
+
+localStorage.setItem(
+"blackframe-pages",
+JSON.stringify(updated)
+);
+
+}
+
+
+
+
+
+function addPage(
+title:string
 ){
 
 
-  const [pages,setPages] = useState<Page[]>(()=>{
+const newPage:Page={
 
+id:Date.now(),
 
-    const saved =
-      localStorage.getItem(
-        "blackframe-pages"
-      );
+title,
 
+content:"",
 
-    return saved
-      ? JSON.parse(saved)
-      : defaultPages;
+status:"Draft",
 
+sections:[]
 
-  });
+};
 
 
+savePages([
+...pages,
+newPage
+]);
 
-  /*
-    Automatically save whenever pages change
-  */
 
-  useEffect(()=>{
+}
 
 
-    localStorage.setItem(
-      "blackframe-pages",
-      JSON.stringify(pages)
-    );
 
 
-  },[pages]);
+function deletePage(
+id:number
+){
 
+savePages(
+pages.filter(
+p=>p.id!==id
+)
+);
 
+}
 
 
 
-  function addPage(title:string){
 
+function updatePage(
+id:number,
+data:Partial<Page>
+){
 
-    const newPage:Page = {
+savePages(
 
-      id:Date.now(),
+pages.map(page=>
 
-      title,
+page.id===id
 
-      content:"",
+?
 
-      status:"Draft"
+{
+...page,
+...data
+}
 
-    };
+:
 
+page
 
-    setPages([
+)
 
-      ...pages,
-
-      newPage
-
-    ]);
-
-
-  }
-
-
-
-
-
-  function deletePage(id:number){
-
-
-    setPages(
-
-      pages.filter(
-        page=>page.id !== id
-      )
-
-    );
-
-
-  }
-
-
-
-
-
-  function updatePage(
-    id:number,
-    changes:Partial<Page>
-  ){
-
-
-    setPages(
-
-      pages.map(page=>
-
-        page.id === id
-
-        ?
-
-        {
-          ...page,
-          ...changes
-        }
-
-        :
-
-        page
-
-      )
-
-    );
-
-
-  }
-
-
-
-
-
-  return (
-
-    <CMSContext.Provider
-
-      value={{
-
-        pages,
-
-        addPage,
-
-        deletePage,
-
-        updatePage
-
-      }}
-
-    >
-
-      {children}
-
-    </CMSContext.Provider>
-
-  );
+);
 
 
 }
@@ -227,25 +242,144 @@ export function CMSProvider(
 
 
 
+function addSection(
+pageId:number,
+type:Section["type"]
+){
+
+savePages(
+
+pages.map(page=>{
+
+if(page.id!==pageId)
+return page;
+
+
+return{
+
+...page,
+
+sections:[
+
+...page.sections,
+
+{
+  id: Date.now(),
+
+  title:
+    type.charAt(0).toUpperCase() +
+    type.slice(1) +
+    " Section",
+
+  type,
+
+  content: ""
+
+}
+
+]
+
+};
+
+
+})
+
+);
+
+
+}
+
+
+
+
+
+function deleteSection(
+pageId:number,
+sectionId:number
+){
+
+savePages(
+
+pages.map(page=>{
+
+
+if(page.id!==pageId)
+return page;
+
+
+return{
+
+...page,
+
+sections:
+page.sections.filter(
+s=>s.id!==sectionId
+)
+
+};
+
+
+})
+
+);
+
+
+}
+
+
+
+
+
+return(
+
+<CMSContext.Provider
+
+value={{
+
+pages,
+
+addPage,
+
+deletePage,
+
+updatePage,
+
+addSection,
+
+deleteSection
+
+}}
+
+>
+
+{children}
+
+</CMSContext.Provider>
+
+);
+
+
+}
+
+
+
 
 export function useCMS(){
 
-
-  const context =
-    useContext(CMSContext);
-
+const context =
+useContext(CMSContext);
 
 
-  if(!context){
+if(!context){
 
-    throw new Error(
-      "useCMS must be used inside CMSProvider"
-    );
+throw new Error(
+"useCMS must be used inside CMSProvider"
+);
 
-  }
+}
 
 
-  return context;
+return context;
 
 
 }

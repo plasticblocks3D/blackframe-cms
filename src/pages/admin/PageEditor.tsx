@@ -1,13 +1,19 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useCMS } from "../../store/CMSContext";
-import { useState } from "react";
+import {
+  useParams,
+  useNavigate
+} from "react-router-dom";
+
+import {
+  useCMS
+} from "../../store/CMSContext";
+
+import {
+  useState
+} from "react";
 
 
-export default function PageEditor() {
+export default function PageEditor(){
 
-  const { id } = useParams();
-
-  const navigate = useNavigate();
 
   const {
     pages,
@@ -15,19 +21,25 @@ export default function PageEditor() {
   } = useCMS();
 
 
+  const {
+    id
+  } = useParams();
+
+
+  const navigate = useNavigate();
+
+
   const page = pages.find(
     p => p.id === Number(id)
   );
 
 
-  const [title,setTitle] = useState(
-    page?.title || ""
-  );
+  const [title, setTitle] =
+    useState("");
 
 
-  const [content,setContent] = useState(
-    page?.content || ""
-  );
+  const [content, setContent] =
+    useState("");
 
 
 
@@ -40,6 +52,7 @@ export default function PageEditor() {
         <h1>
           Page Not Found
         </h1>
+
 
         <button
           onClick={() => navigate("/pages")}
@@ -55,14 +68,16 @@ export default function PageEditor() {
 
 
 
-  function savePage(){
+  function save(){
 
     updatePage(
-      page.id,
+  page!.id,
+
       {
         title,
         content
       }
+
     );
 
 
@@ -76,19 +91,26 @@ export default function PageEditor() {
 
     <div className="page">
 
+
       <h1>
         Edit Page
       </h1>
 
 
 
-      <h3>
+      <label>
         Title
-      </h3>
+      </label>
+
+
+      <br/>
+
 
       <input
 
-        value={title}
+        value={
+          title || page.title
+        }
 
         onChange={
           e => setTitle(e.target.value)
@@ -98,20 +120,25 @@ export default function PageEditor() {
 
 
 
-      <br/><br/>
+      <br/>
+      <br/>
 
 
 
-      <h3>
+      <label>
         Content
-      </h3>
+      </label>
+
+
+      <br/>
+
 
 
       <textarea
 
-        rows={12}
-
-        value={content}
+        value={
+          content || page.content
+        }
 
         onChange={
           e => setContent(e.target.value)
@@ -121,19 +148,22 @@ export default function PageEditor() {
 
 
 
-      <br/><br/>
+      <br/>
+      <br/>
 
 
 
       <button
-        onClick={savePage}
+        onClick={save}
       >
         Save Changes
       </button>
 
 
+
     </div>
 
   );
+
 
 }
