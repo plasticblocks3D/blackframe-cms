@@ -1,231 +1,283 @@
 import { useState } from "react";
 import { useCMS } from "../../store/CMSContext";
+import SectionEditor from "../../components/builder/SectionEditor";
+import Preview from "../../components/builder/Preview";
 
 
-export default function Builder() {
+export default function Builder(){
 
+const {
+pages,
+addSection,
+updateSection,
+deleteSection
+}=useCMS();
 
-  const {
-    pages,
-    addSection,
-    deleteSection
-  } = useCMS();
 
+const [selectedPage,setSelectedPage]
+=
+useState<number>(
+pages[0]?.id || 0
+);
 
 
-  const [selectedPage, setSelectedPage] = useState<number>(
-    pages.length > 0 ? pages[0].id : 0
-  );
+const page =
+pages.find(
+p=>p.id===selectedPage
+);
 
 
 
-  const page = pages.find(
-    p => p.id === selectedPage
-  );
+function createSection(
+type:
+"hero"
+|"text"
+|"image"
+|"gallery"
+|"contact"
+|"button"
+){
 
+if(!page) return;
 
+addSection(
+page.id,
+type
+);
 
-  function createSection(
-    type:
-      | "hero"
-      | "text"
-      | "image"
-      | "gallery"
-      | "contact"
-      | "button"
-  ) {
+}
 
-    if (!page) {
-      return;
-    }
 
 
-    addSection(
-      page.id,
-      type
-    );
+return(
 
-  }
+<div
+style={{
+display:"grid",
+gridTemplateColumns:"1fr 1fr",
+gap:"30px",
+padding:"20px"
+}}
+>
 
 
+<div>
 
-  if (!page) {
 
-    return (
+<h1>
+Page Builder
+</h1>
 
-      <div className="page">
 
-        <h1>
-          Page Builder
-        </h1>
 
-        <p>
-          No pages exist yet.
-        </p>
+<select
 
-      </div>
+value={selectedPage}
 
-    );
+onChange={(e)=>
+setSelectedPage(
+Number(e.target.value)
+)
+}
 
-  }
+>
 
+{
+pages.map(page=>(
 
+<option
+key={page.id}
+value={page.id}
+>
+{page.title}
+</option>
 
+))
 
-  return (
+}
 
-    <div className="page">
+</select>
 
 
-      <h1>
-        Page Builder
-      </h1>
 
+<h2>
+Sections
+</h2>
 
 
-      <select
-        value={selectedPage}
-        onChange={(e)=>
-          setSelectedPage(
-            Number(e.target.value)
-          )
-        }
-      >
 
-        {
-          pages.map(
-            p =>
+<div>
 
-            <option
-              key={p.id}
-              value={p.id}
-            >
-              {p.title}
-            </option>
 
-          )
-        }
+<button
+onClick={()=>
+createSection("hero")
+}
+>
++ Add Hero
+</button>
 
-      </select>
 
+<button
+onClick={()=>
+createSection("text")
+}
+>
++ Add Text
+</button>
 
 
+<button
+onClick={()=>
+createSection("image")
+}
+>
++ Add Image
+</button>
 
-      <div>
 
+<button
+onClick={()=>
+createSection("gallery")
+}
+>
++ Add Gallery
+</button>
 
-        <button
-          onClick={() =>
-            createSection("hero")
-          }
-        >
-          + Add Hero
-        </button>
 
+<button
+onClick={()=>
+createSection("contact")
+}
+>
++ Add Contact
+</button>
 
 
-        <button
-          onClick={() =>
-            createSection("text")
-          }
-        >
-          + Add Text
-        </button>
+<button
+onClick={()=>
+createSection("button")
+}
+>
++ Add Button
+</button>
 
 
+</div>
 
-        <button
-          onClick={() =>
-            createSection("image")
-          }
-        >
-          + Add Image
-        </button>
 
 
+{
+page?.sections.map(
+section=>(
 
-        <button
-          onClick={() =>
-            createSection("gallery")
-          }
-        >
-          + Add Gallery
-        </button>
+<div
+key={section.id}
 
+style={{
+border:"1px solid #444",
+padding:"15px",
+marginTop:"15px",
+borderRadius:"8px"
+}}
 
+>
 
-        <button
-          onClick={() =>
-            createSection("contact")
-          }
-        >
-          + Add Contact
-        </button>
 
+<h3>
+{section.title}
+</h3>
 
 
-        <button
-          onClick={() =>
-            createSection("button")
-          }
-        >
-          + Add Button
-        </button>
+<p>
+Type: {section.type}
+</p>
 
 
-      </div>
 
+<SectionEditor
 
+section={section}
 
+onSave={(updatedSection)=>{
 
+updateSection(
 
-      <h2>
-        Sections
-      </h2>
+page.id,
 
+section.id,
 
+updatedSection
 
-      {
-  (page.sections || []).map(
+);
 
-    section =>
+}}
 
-          <div
-            key={section.id}
-            className="card"
-          >
+/>
 
-            <h3>
-              {section.title}
-            </h3>
 
 
-            <p>
-              Type: {section.type}
-            </p>
+<button
 
+style={{
+marginTop:"10px"
+}}
 
-            <button
-              onClick={() =>
-                deleteSection(
-                  page.id,
-                  section.id
-                )
-              }
-            >
-              Delete
-            </button>
+onClick={()=>
+deleteSection(
+page.id,
+section.id
+)
+}
 
+>
+Delete
+</button>
 
-          </div>
 
-        )
-      }
 
+</div>
 
+)
 
-    </div>
+)
 
-  );
+}
+
+
+
+</div>
+
+
+
+<div>
+
+
+<h1>
+Website Preview
+</h1>
+
+
+
+{
+page &&
+
+<Preview
+
+page={page}
+
+/>
+
+}
+
+
+
+</div>
+
+
+
+</div>
+
+);
 
 }

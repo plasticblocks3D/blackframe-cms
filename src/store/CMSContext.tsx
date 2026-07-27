@@ -20,6 +20,11 @@ export type Section = {
     | "button";
 
 
+  content?:string;
+
+  image?:string;
+
+
   settings?:{
 
     heading?:string;
@@ -50,6 +55,7 @@ export type Page = {
     | "Published"
     | "Draft";
 
+
   sections:Section[];
 
 };
@@ -57,8 +63,8 @@ export type Page = {
 
 
 
-type CMSContextType = {
 
+type CMSContextType = {
 
   pages:Page[];
 
@@ -68,11 +74,9 @@ type CMSContextType = {
   ):void;
 
 
-
   deletePage(
     id:number
   ):void;
-
 
 
   updatePage(
@@ -103,17 +107,36 @@ type CMSContextType = {
   ):void;
 
 
+
+  moveSectionUp(
+    pageId:number,
+    sectionId:number
+  ):void;
+
+
+
+  moveSectionDown(
+    pageId:number,
+    sectionId:number
+  ):void;
+
+
+
+  duplicateSection(
+    pageId:number,
+    sectionId:number
+  ):void;
+
+
 };
 
 
 
 
 
-
-const defaultPages:Page[] = [
+const defaultPages:Page[]=[
 
 {
-
 id:1,
 
 title:"Home",
@@ -125,7 +148,6 @@ status:"Published",
 sections:[
 
 {
-
 id:1,
 
 title:"Hero Section",
@@ -134,9 +156,15 @@ type:"hero",
 
 settings:{
 
-heading:"Welcome",
+heading:"",
 
-text:"Build amazing websites."
+text:"",
+
+image:"",
+
+buttonText:"",
+
+buttonLink:""
 
 }
 
@@ -161,7 +189,6 @@ status:"Draft",
 sections:[
 
 {
-
 id:2,
 
 title:"Text Section",
@@ -170,9 +197,11 @@ type:"text",
 
 settings:{
 
-heading:"About Us",
+heading:"",
 
-text:"Tell your story here."
+text:"",
+
+image:""
 
 }
 
@@ -205,9 +234,9 @@ sections:[]
 
 
 
-const CMSContext =
-createContext<CMSContextType|null>(null);
 
+const CMSContext =
+createContext<CMSContextType | null>(null);
 
 
 
@@ -236,31 +265,14 @@ localStorage.getItem(
 );
 
 
-
-if(saved){
-
-return JSON.parse(saved).map(
-(page:Page)=>({
-
-...page,
-
-sections:
-page.sections || []
-
-})
-
-);
-
-
-}
-
-
-
-return defaultPages;
+return saved
+?
+JSON.parse(saved)
+:
+defaultPages;
 
 
 });
-
 
 
 
@@ -287,14 +299,11 @@ JSON.stringify(updated)
 
 
 
-
-
 function addPage(
 title:string
 ){
 
-
-const page:Page={
+const newPage:Page={
 
 id:Date.now(),
 
@@ -313,10 +322,9 @@ savePages([
 
 ...pages,
 
-page
+newPage
 
 ]);
-
 
 }
 
@@ -331,7 +339,6 @@ function deletePage(
 id:number
 ){
 
-
 savePages(
 
 pages.filter(
@@ -340,9 +347,7 @@ p=>p.id!==id
 
 );
 
-
 }
-
 
 
 
@@ -355,12 +360,9 @@ id:number,
 data:Partial<Page>
 ){
 
-
 savePages(
 
-pages.map(
-
-page=>
+pages.map(page=>
 
 page.id===id
 
@@ -382,7 +384,6 @@ page
 
 );
 
-
 }
 
 
@@ -398,13 +399,9 @@ pageId:number,
 type:Section["type"]
 ){
 
-
-
 savePages(
 
-pages.map(
-
-page=>{
+pages.map(page=>{
 
 
 if(page.id!==pageId)
@@ -413,8 +410,17 @@ return page;
 
 
 
+return{
 
-const section:Section={
+...page,
+
+
+sections:[
+
+...page.sections,
+
+
+{
 
 id:Date.now(),
 
@@ -430,30 +436,28 @@ type.slice(1)
 type,
 
 
-settings:{}
+settings:{
 
-};
+heading:"",
 
+text:"",
 
+image:"",
 
-return{
+buttonText:"",
 
-...page,
+buttonLink:""
 
-sections:[
+}
 
-...page.sections,
-
-section
+}
 
 ]
 
 };
 
 
-}
-
-)
+})
 
 );
 
@@ -478,12 +482,9 @@ data:Partial<Section>
 
 ){
 
-
 savePages(
 
-pages.map(
-
-page=>{
+pages.map(page=>{
 
 
 if(page.id!==pageId)
@@ -496,11 +497,11 @@ return{
 
 ...page,
 
+
 sections:
 
-page.sections.map(
+page.sections.map(section=>
 
-section=>
 
 section.id===sectionId
 
@@ -510,22 +511,31 @@ section.id===sectionId
 
 ...section,
 
-...data
+...data,
+
+
+settings:{
+
+...section.settings,
+
+...data.settings
 
 }
+
+}
+
 
 :
 
 section
+
 
 )
 
 };
 
 
-}
-
-)
+})
 
 );
 
@@ -548,12 +558,9 @@ sectionId:number
 
 ){
 
-
 savePages(
 
-pages.map(
-
-page=>{
+pages.map(page=>{
 
 
 if(page.id!==pageId)
@@ -565,6 +572,7 @@ return page;
 return{
 
 ...page,
+
 
 sections:
 
@@ -579,14 +587,244 @@ section.id!==sectionId
 };
 
 
-}
-
-)
+})
 
 );
 
 
 }
+
+
+
+
+
+
+
+
+
+
+function moveSectionUp(
+
+pageId:number,
+
+sectionId:number
+
+){
+
+savePages(
+
+pages.map(page=>{
+
+
+if(page.id!==pageId)
+
+return page;
+
+
+
+const sections=[...page.sections];
+
+
+const index =
+sections.findIndex(
+s=>s.id===sectionId
+);
+
+
+
+if(index<=0)
+
+return page;
+
+
+
+[
+sections[index-1],
+sections[index]
+
+]=
+
+[
+sections[index],
+sections[index-1]
+
+];
+
+
+
+return{
+
+...page,
+
+sections
+
+};
+
+
+})
+
+);
+
+
+}
+
+
+
+
+
+
+
+
+
+function moveSectionDown(
+
+pageId:number,
+
+sectionId:number
+
+){
+
+savePages(
+
+pages.map(page=>{
+
+
+if(page.id!==pageId)
+
+return page;
+
+
+
+const sections=[...page.sections];
+
+
+const index =
+sections.findIndex(
+s=>s.id===sectionId
+);
+
+
+
+if(
+index===-1 ||
+index===sections.length-1
+)
+
+return page;
+
+
+
+[
+sections[index],
+sections[index+1]
+
+]=
+
+[
+sections[index+1],
+sections[index]
+
+];
+
+
+
+return{
+
+...page,
+
+sections
+
+};
+
+
+})
+
+);
+
+
+}
+
+
+
+
+
+
+
+
+
+function duplicateSection(
+
+pageId:number,
+
+sectionId:number
+
+){
+
+savePages(
+
+pages.map(page=>{
+
+
+if(page.id!==pageId)
+
+return page;
+
+
+
+const section =
+page.sections.find(
+s=>s.id===sectionId
+);
+
+
+
+if(!section)
+
+return page;
+
+
+
+return{
+
+...page,
+
+
+sections:[
+
+...page.sections,
+
+
+{
+
+...section,
+
+id:Date.now(),
+
+title:
+section.title+" Copy",
+
+
+settings:{
+
+...section.settings
+
+}
+
+}
+
+]
+
+};
+
+
+})
+
+);
+
+
+}
+
+
 
 
 
@@ -613,7 +851,13 @@ addSection,
 
 updateSection,
 
-deleteSection
+deleteSection,
+
+moveSectionUp,
+
+moveSectionDown,
+
+duplicateSection
 
 }}
 
@@ -637,8 +881,8 @@ deleteSection
 
 
 
-export function useCMS(){
 
+export function useCMS(){
 
 const context =
 useContext(CMSContext);
