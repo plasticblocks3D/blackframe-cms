@@ -1,16 +1,37 @@
+import StatCard from "../../components/ui/StatCard";
+
 export default function Dashboard() {
   return (
-    <div
-      style={{
-        background: "#181818",
-        color: "white",
-        minHeight: "100vh",
-        padding: "40px",
-      }}
-    >
-      <h1>BlackFrame CMS</h1>
+    <div className="page">
 
-      <p>Dashboard is working!</p>
+      <h1>Dashboard</h1>
+
+      <p>Welcome to BlackFrame CMS.</p>
+
+      <div className="stats-grid">
+
+        <StatCard
+          title="Pages"
+          value={0}
+        />
+
+        <StatCard
+          title="Media"
+          value={0}
+        />
+
+        <StatCard
+          title="Visitors"
+          value={0}
+        />
+
+        <StatCard
+          title="Forms"
+          value={0}
+        />
+
+      </div>
+
     </div>
   );
 }
